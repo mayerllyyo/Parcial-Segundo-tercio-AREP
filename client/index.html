@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tribonacci - Math Microservices</title>
+</head>
+<body>
+    <div class="config">
+        <label for="proxyUrl">URL del Proxy Service:</label>
+        <input type="text" id="proxyUrl" value="http://localhost:8090">
+    </div>
+
+    <form>
+        <label for="value">Valor de n (entero no negativo):</label><br><br>
+        <input type="number" id="value" name="value" value="13" min="0">
+        <input type="button" value="Calcular" onclick="calcularTribonacci()">
+    </form>
+
+    <div id="error"></div>
+    <div id="result"></div>
+
+    <script>
+        function calcularTribonacci() {
+            var n = document.getElementById("value").value;
+            var proxyUrl = document.getElementById("proxyUrl").value.replace(/\/$/, "");
+            var url = proxyUrl + "/proxy/tribseq?value=" + encodeURIComponent(n);
+
+            document.getElementById("result").innerHTML = "Calculando...";
+            document.getElementById("error").innerHTML = "";
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.onload = function() {
+                if (this.status === 200) {
+                    try {
+                        var data = JSON.parse(this.responseText);
+                        document.getElementById("result").innerHTML =
+                            "<strong>Operación:</strong> " + data.operation + "\n" +
+                            "<strong>Input n:</strong> " + data.input + "\n" +
+                            "<strong>Secuencia:</strong> " + data.output;
+                    } catch (e) {
+                        document.getElementById("result").innerHTML = this.responseText;
+                    }
+                } else {
+                    document.getElementById("error").innerHTML = "Error HTTP " + this.status + ": " + this.responseText;
+                    document.getElementById("result").innerHTML = "";
+                }
+            };
+            xhttp.open("GET", url);
+            xhttp.send();
+        }
+    </script>
+</body>
+</html>
